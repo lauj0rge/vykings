@@ -1,0 +1,112 @@
+# =========================
+# OS / Editor junk
+# =========================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.log
+
+# =========================
+# Python / Scripts
+# =========================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pytest_cache/
+
+# =========================
+# Terraform
+# =========================
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# =========================
+# Helm
+# =========================
+*.tgz
+charts/*
+!charts/.gitkeep
+helmfile.d/
+
+# =========================
+# Kubernetes / Kubeconfig
+# =========================
+.kube/
+*.kubeconfig
+kubeconfig.yaml
+*kubeseal*
+
+# =========================
+# Secrets (DON’T COMMIT REAL SECRETS)
+# =========================
+*.key
+*.crt
+*.pem
+*.p12
+*.jks
+*.env
+.envrc
+.env.*
+
+# =========================
+# Docker
+# =========================
+.docker/
+docker-compose.override.yml
+docker-compose.override.yaml
+
+# =========================
+# Backup / tmp files
+# =========================
+*.bak
+*.tmp
+*.temp
+*.out
+*.err
+*.pid
+*.lock
+
+# =========================
+# Node / Frontend (if used)
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+dist/
+build/
+
+# =========================
+# Go (if backend uses Go)
+# =========================
+bin/
+vendor/
+*.test
+
+# =========================
+# Misc
+# =========================
+*.iml
+*.class
+*.o
+*.so
+*.dll
+*.exe
+

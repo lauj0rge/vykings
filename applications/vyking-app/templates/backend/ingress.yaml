@@ -1,0 +1,29 @@
+{{- if and .Values.backend.enabled .Values.backend.ingress.enabled }}
+  {{- $root := . -}}
+  {{- $backend := $root.Values.backend -}}
+  {{- $name := include "vyking-app.backendFullname" $root -}}
+  {{- $namespace := default $root.Release.Namespace $backend.namespace -}}
+  {{- $pathPrefix := default "/api" $backend.ingress.path -}}
+  {{- $pathType := default "Prefix" $backend.ingress.pathType -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $name }}-ingress
+  namespace: {{ $namespace }}
+  {{- with $backend.ingress.annotations }}
+  annotations:
+  {{ toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  rules:
+    - host: {{ $backend.ingress.host | default "frontend-dev.local" }}
+      http:
+        paths:
+          - path: {{ $pathPrefix }}
+            pathType: {{ $pathType }}
+            backend:
+              service:
+                name: {{ $name }}
+                port:
+                  number: {{ $backend.service.port }}
+  {{- end }}

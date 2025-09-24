@@ -1,0 +1,98 @@
+name: Vyking CICD
+
+on:
+  push:
+    branches:
+      - dev
+      - prod
+  workflow_dispatch:
+
+jobs:
+  deploy_dev:
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    env:
+      ENVIRONMENT: dev
+      CLUSTER_NAME: vyking-dev
+      FE_IMAGE: vyking-frontend:dev
+      BE_IMAGE: vyking-backend:dev
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install k3d & kubectl
+        run: |
+          curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+          sudo apt-get update && sudo apt-get install -y kubectl
+          k3d cluster create $CLUSTER_NAME --wait
+
+      - name: Write kubeconfig for Terraform
+        run: |
+          mkdir -p ~/.kube
+          k3d kubeconfig get $CLUSTER_NAME > ~/.kube/vyking-${ENVIRONMENT}-config 
+
+      - name: Build and import images
+        run: |
+          docker build -t $FE_IMAGE ./applications/frontend/app
+          docker build -t $BE_IMAGE ./applications/backend/app
+          k3d image import -c $CLUSTER_NAME $FE_IMAGE $BE_IMAGE
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+
+      - name: Terraform Init
+        working-directory: terraform
+        run: terraform init -input=false
+
+      - name: Terraform Apply (dev)
+        working-directory: terraform
+        run: |
+          terraform apply -var-file=env/dev.tfvars -target=module.argocd -auto-approve
+          terraform apply -var-file=env/dev.tfvars -target=module.infra -auto-approve
+          terraform apply -var-file=env/dev.tfvars -target=module.applications -auto-approve
+
+  deploy_prod:
+    if: github.ref == 'refs/heads/prod'
+    runs-on: ubuntu-latest
+    environment: prod   # requires approval in Settings → Environments → prod
+    env:
+      ENVIRONMENT: prod
+      CLUSTER_NAME: vyking-prod
+      FE_IMAGE: vyking-frontend:prod
+      BE_IMAGE: vyking-backend:prod
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install k3d & kubectl
+        run: |
+          curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+          sudo apt-get update && sudo apt-get install -y kubectl
+          k3d cluster create $CLUSTER_NAME --wait
+
+      - name: Write kubeconfig for Terraform
+        run: |
+          mkdir -p ~/.kube
+          k3d kubeconfig get $CLUSTER_NAME > ~/.kube/$CLUSTER_NAME-config
+          cp ~/.kube/$CLUSTER_NAME-config ~/.kube/vyking-dev-config
+      - name: Build and import images
+        run: |
+          docker build -t $FE_IMAGE ./applications/frontend/app
+          docker build -t $BE_IMAGE ./applications/backend/app
+          k3d image import -c $CLUSTER_NAME $FE_IMAGE $BE_IMAGE
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+
+      - name: Terraform Init
+        working-directory: terraform
+        run: terraform init -input=false
+
+      - name: Terraform Apply (prod)
+        working-directory: terraform
+        run: |
+          terraform apply -var-file=env/prod.tfvars -target=module.argocd -auto-approve
+          terraform apply -var-file=env/prod.tfvars -target=module.infra -auto-approve
+          terraform apply -var-file=env/prod.tfvars -target=module.applications -auto-approve

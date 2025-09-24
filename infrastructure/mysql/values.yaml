@@ -1,0 +1,9 @@
+  image:
+    registry: docker.io
+    repository: bitnami/mysql
+    tag: 8.0.39-debian-12-r1
+  primary:
+    persistence:
+      enabled: true
+      size: 8Gi
+

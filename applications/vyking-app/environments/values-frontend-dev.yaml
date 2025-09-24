@@ -1,0 +1,35 @@
+global:
+  environment: dev
+
+frontend:
+  enabled: true
+  namespace: frontend-dev
+  replicaCount: 1
+  image:
+    repository: vyking-frontend
+    tag: dev
+    pullPolicy: IfNotPresent
+  service:
+    port: 8080
+    targetPort: 80
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+    hosts:
+      - host: frontend-dev.local
+        paths:
+          - path: /
+            pathType: Prefix
+
+  hpa:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 3
+    cpuUtilization: 70
+    memoryUtilization: 80
+
+backend:
+  host: backend-backend.backend-dev.svc.cluster.local
+  port: 8081
+  enabled: false

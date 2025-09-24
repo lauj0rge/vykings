@@ -1,0 +1,78 @@
+{{- if .Values.frontend.enabled }}
+{{- $root := . -}}
+{{- $frontend := $root.Values.frontend -}}
+{{- $name := include "vyking-app.frontendFullname" $root -}}
+{{- $namespace := default $root.Release.Namespace $frontend.namespace -}}
+{{- $backendNamespace := default $root.Release.Namespace $root.Values.backend.namespace -}}
+{{- $backendService := include "vyking-app.backendFullname" $root -}}
+{{- $backendHost := default (printf "%s.%s.svc.cluster.local" $backendService $backendNamespace) $frontend.backend.host -}}
+{{- $backendPort := default $root.Values.backend.service.port $frontend.backend.port -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+  namespace: {{ $namespace }}
+  labels:
+    app: {{ $name }}
+    environment: {{ include "vyking-app.environment" $root }}
+spec:
+  replicas: {{ $frontend.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ $name }}
+  template:
+    metadata:
+      labels:
+        app: {{ $name }}
+        environment: {{ include "vyking-app.environment" $root }}
+    spec:
+      containers:
+        - name: frontend
+          image: "{{ $frontend.image.repository }}:{{ $frontend.image.tag }}"
+          imagePullPolicy: {{ $frontend.image.pullPolicy  }}
+          ports:
+            - containerPort: {{ default 80 $frontend.service.targetPort }}
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+              readOnly: true
+          env:
+            - name: BACKEND_URL
+              value: "http://backend-backend.backend-dev.svc.cluster.local:8081"
+          livenessProbe:
+            httpGet:
+              path: {{ $frontend.probes.liveness.path }}
+              port: {{ $frontend.probes.liveness.port }}
+            initialDelaySeconds: {{ $frontend.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ $frontend.probes.liveness.periodSeconds }}
+          readinessProbe:
+            httpGet:
+              path: {{ $frontend.probes.readiness.path }}
+              port: {{ $frontend.probes.readiness.port }}
+            initialDelaySeconds: {{ $frontend.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ $frontend.probes.readiness.periodSeconds }}
+          resources:
+{{- toYaml $frontend.resources | nindent 12 }}
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: frontend-{{ .Release.Name }}-nginx-config
+            items:
+              - key: default.conf
+                path: default.conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+  namespace: {{ $namespace }}
+spec:
+  type: {{ $frontend.service.type }}
+  selector:
+    app: {{ $name }}
+  ports:
+    - port: {{ $frontend.service.port }}
+      targetPort: {{ default $frontend.service.port $frontend.service.targetPort }}
+      protocol: TCP
+{{- end }}

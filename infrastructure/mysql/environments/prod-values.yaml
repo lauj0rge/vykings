@@ -1,0 +1,40 @@
+image:
+  registry: docker.io
+  repository: bitnami/mysql
+  tag: 8.0.39-debian-12-r1
+
+auth:
+  existingSecret: mysql-prod-secret
+  secretKeys:
+    rootPassword: mysql-root-password
+    username: mysql-username
+    password: mysql-password
+    database: mysql-database
+
+initdbScriptsConfigMap: mysql-init-sql
+
+primary:
+  configuration: |-
+    [mysqld]
+    default_authentication_plugin=mysql_native_password
+    max_connections=2000              
+    connect_timeout=120
+    net_read_timeout=120
+    net_write_timeout=120
+  persistence:
+    enabled: true
+    size: 50Gi
+
+backup:
+  schedule: "0 2 * * *"
+  pvc: mysql-backups
+  envFromSecret:
+    name: mysql-prod-secret
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: 2000m
+    memory: 2Gi

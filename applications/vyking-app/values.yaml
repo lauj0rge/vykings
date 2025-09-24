@@ -1,0 +1,108 @@
+global:
+  environment: dev
+
+frontend:
+  enabled: true
+  namespace: ""
+  replicaCount: 1
+  image:
+    repository: vyking-frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 80
+  ingress:
+    enabled: false
+    annotations: {}
+    hosts: []
+    tls: []
+  backend:
+    host: ""
+    port: 8081
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+  probes:
+    liveness:
+      path: /
+      port: 80
+      initialDelaySeconds: 5
+      periodSeconds: 15
+    readiness:
+      path: /
+      port: 80
+      initialDelaySeconds: 3
+      periodSeconds: 10
+  hpa:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 2
+    cpuUtilization: 70
+    memoryUtilization: 80
+
+backend:
+  enabled: true
+  namespace: ""
+  replicaCount: 2
+  image:
+    repository: vyking-backend
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 8081
+  mysql:
+    host: mysql
+    port: 3306
+    secretName: mysql-secret
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop: ["ALL"]
+  ingress:
+    enabled: false
+    annotations:
+      nginx.ingress.kubernetes.io/use-regex: "true"
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+    host: ""
+    path: /api
+    pathType: ImplementationSpecific
+  probes:
+    liveness:
+      path: /health
+      port: 8081
+      initialDelaySeconds: 10
+      periodSeconds: 15
+      timeoutSeconds: 2
+      failureThreshold: 3
+    readiness:
+      path: /health
+      port: 8081
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      timeoutSeconds: 2
+      failureThreshold: 3
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    cpuUtilization: 70
+    memoryUtilization: 70
+  labels: {}

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vyking Gaming Analytics - Leaderboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 24px;
+            background: radial-gradient(circle at top left, #0f1c3f, #090b18 60%);
+            color: #ecf0f1;
+        }
+        .container {
+            background: rgba(9, 14, 29, 0.88);
+            padding: 28px;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(46, 134, 222, 0.25);
+        }
+        h1 {
+            color: #2ecc71;
+            margin-bottom: 8px;
+            font-size: 2.3rem;
+            letter-spacing: 0.02em;
+        }
+        p.subtitle {
+            color: #bdc3c7;
+            margin-top: 0;
+            margin-bottom: 24px;
+            font-size: 1.1rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            background: rgba(20, 30, 61, 0.8);
+        }
+        thead th {
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.08em;
+            padding: 14px 12px;
+            text-align: left;
+            background: rgba(46, 134, 222, 0.3);
+            color: #f4f6f7;
+        }
+        tbody td {
+            padding: 14px 12px;
+            border-bottom: 1px solid rgba(46, 134, 222, 0.1);
+        }
+        tbody tr:hover {
+            background: rgba(46, 134, 222, 0.15);
+        }
+        .metric {
+            font-weight: 600;
+            color: #2ecc71;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            background: rgba(46, 134, 222, 0.2);
+            color: #1abc9c;
+        }
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        #errorMessage {
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+            padding: 12px 16px;
+            border-left: 3px solid #e74c3c;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+        }
+        #lastRefreshed {
+            font-size: 0.85rem;
+            color: #95a5a6;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Vyking Arena Leaderboard</h1>
+    <p class="subtitle">
+        Snapshot of the top 15 contenders on the Vyking gaming platform. Stats blend win rate, total match volume,
+        and session stamina to highlight players shaping the current season meta.
+    </p>
+
+    <div id="errorMessage"></div>
+    <table>
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Gamer Tag</th>
+            <th>Region</th>
+            <th>Level</th>
+            <th>Matches</th>
+            <th>Win Rate</th>
+            <th>Avg. Session (min)</th>
+            <th>Favorite Mode</th>
+            <th>Last Login</th>
+        </tr>
+        </thead>
+        <tbody id="leaderboardBody">
+        <tr><td colspan="9">Loading leaderboard...</td></tr>
+        </tbody>
+    </table>
+    <div id="lastRefreshed"></div>
+</div>
+
+<footer>
+    Vyking Gaming Insights — Mock data for developer testing
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

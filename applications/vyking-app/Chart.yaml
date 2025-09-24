@@ -1,0 +1,6 @@
+apiVersion: v2
+name: vyking-app
+description: Combined Helm chart for the Vyking frontend and backend
+version: 0.1.0
+appVersion: "1.0"
+type: application

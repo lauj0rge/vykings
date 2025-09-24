@@ -1,0 +1,46 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mysql-backup
+spec:
+  schedule: "{{ .Values.backup.schedule }}"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: mysql-backup
+              image: docker.io/bitnami/mysql:8.0.39-debian-12-r1
+              command:
+                - sh
+                - -c
+                - >
+                  MYSQL_PWD="$MYSQL_PASSWORD" mysqldump
+                  -h mysql
+                  -u"$MYSQL_USER"
+                  "$MYSQL_DATABASE"
+                  > /backup/db-$(date +\%F-\%H-\%M).sql
+              env:
+                - name: MYSQL_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.auth.existingSecret }}
+                      key: {{ .Values.auth.secretKeys.username }}
+                - name: MYSQL_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.auth.existingSecret }}
+                      key: {{ .Values.auth.secretKeys.password }}
+                - name: MYSQL_DATABASE
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.auth.existingSecret }}
+                      key: {{ .Values.auth.secretKeys.database }}
+              volumeMounts:
+                - name: backup-storage
+                  mountPath: /backup
+          restartPolicy: OnFailure
+          volumes:
+            - name: backup-storage
+              persistentVolumeClaim:
+                claimName: {{ .Values.backup.pvc }}

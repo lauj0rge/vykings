@@ -1,0 +1,28 @@
+crds:
+  keep: false
+
+server:
+  service:
+    type: ClusterIP
+  ingress:
+    enabled: false
+
+configs:
+  params:
+    server.insecure: true
+
+controller:
+  metrics:
+    enabled: true
+repoServer:
+  metrics:
+    enabled: true
+dex:
+  metrics:
+    enabled: true
+redis:
+  metrics:
+    enabled: true
+
+notifications:
+  enabled: true
